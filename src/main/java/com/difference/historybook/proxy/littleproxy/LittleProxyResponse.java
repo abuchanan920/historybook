@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 
 import com.difference.historybook.proxy.ProxyResponse;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpResponse;
 
 /**
@@ -58,7 +59,17 @@ public class LittleProxyResponse implements ProxyResponse {
 
 	@Override
 	public byte[] getContent() {
-		return response.content().array();
+		ByteBuf buf = response.content();
+		byte[] bytes;
+		int length = buf.readableBytes();
+
+		if (buf.hasArray()) {
+			bytes = buf.array();
+		} else {
+			bytes = new byte[length];
+			buf.getBytes(buf.readerIndex(), bytes);
+		}
+		return bytes;
 	}
 
 }

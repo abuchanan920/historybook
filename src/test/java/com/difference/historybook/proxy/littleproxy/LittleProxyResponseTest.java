@@ -26,6 +26,7 @@ import org.junit.Test;
 import com.google.common.base.Charsets;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -60,9 +61,18 @@ public class LittleProxyResponseTest {
 
 	@Test
 	public void testGetContent() {
+		String msg = "This is a test";
+		testGetContent(msg, UnpooledByteBufAllocator.DEFAULT.heapBuffer(msg.getBytes(Charsets.UTF_8).length));
+	}
+	
+	@Test
+	public void testGetContentWithNoBackingArray() {
+		testGetContent("This is a test", PooledByteBufAllocator.DEFAULT.compositeBuffer());
+	}
+	
+	private void testGetContent(String msg, ByteBuf buffer) {
 		FullHttpResponse response = mock(FullHttpResponse.class);
-		byte[] bytes = "This is a test".getBytes(Charsets.UTF_8);
-		ByteBuf buffer = UnpooledByteBufAllocator.DEFAULT.heapBuffer(bytes.length);
+		byte[] bytes = msg.getBytes(Charsets.UTF_8);
 		buffer.writeBytes(bytes, 0, bytes.length);
 		when(response.content()).thenReturn(buffer);
 		
