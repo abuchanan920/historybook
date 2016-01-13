@@ -16,6 +16,10 @@
 
 package com.difference.historybook.proxy.littleproxy;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Predicate;
+
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSource;
@@ -28,12 +32,22 @@ import org.slf4j.LoggerFactory;
 import com.difference.historybook.proxy.Proxy;
 import com.difference.historybook.proxy.ProxyFilter;
 import com.difference.historybook.proxy.ProxyFilterFactory;
+import com.difference.historybook.proxy.ProxyResponseInfo;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpContentDecompressor;
 import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseDecoder;
+import io.netty.util.CharsetUtil;
 
 /**
  * An implementation of @Proxy using LittleProxy which is based on a Netty core 
@@ -42,6 +56,7 @@ public class LittleProxy implements Proxy {
 	private static final Logger LOG = LoggerFactory.getLogger(LittleProxy.class);
 
 	private ProxyFilterFactory filterFactory;
+	private Predicate<ProxyResponseInfo> selector;
 	
 	private HttpProxyServer proxy = null;
 	
@@ -51,6 +66,12 @@ public class LittleProxy implements Proxy {
 		return this;
 	}
 	
+	@Override
+	public Proxy setResponseFilterSelector(Predicate<ProxyResponseInfo> selector) {
+		this.selector = selector;
+		return this;
+	}
+
 	@Override
 	public void start() {
 		if (proxy == null) {
@@ -71,53 +92,69 @@ public class LittleProxy implements Proxy {
 	}
 	
 	private HttpFiltersSource getFiltersSource() {
-		//TODO: Is this limiting large file downloads?
 		return new HttpFiltersSourceAdapter() {
 			@Override
 			public HttpFilters filterRequest(HttpRequest originalRequest) {
 				
 				return new HttpFiltersAdapter(originalRequest) {
 					private final ProxyFilter filter = filterFactory != null ? filterFactory.getInstance() : null;
+					private EmbeddedChannel bufferChannel = null;
 					
 					@Override
-	                 public HttpResponse clientToProxyRequest(HttpObject httpObject) {
+	                public HttpResponse clientToProxyRequest(HttpObject httpObject) {
 						if (filter != null && httpObject instanceof DefaultHttpRequest) {
 							filter.processRequest(new LittleProxyRequest((DefaultHttpRequest)httpObject));
 						}
 						return null;
-	                 }
+	                }
 					
 					@Override
-					public HttpObject proxyToClientResponse(HttpObject httpObject) {							
-						if (filter != null && httpObject instanceof FullHttpResponse) {
+					public HttpObject proxyToClientResponse(HttpObject httpObject) {
+						if (httpObject instanceof DefaultHttpResponse) {
+							DefaultHttpResponse response = (DefaultHttpResponse)httpObject;
+							Map<String,String> headers = new HashMap<>();
+							response.headers().forEach(e -> {
+								headers.put(e.getKey(), e.getValue());
+							});
+							
+							if (selector != null && selector.test(new ProxyResponseInfo(response.getStatus().code(), headers))) {
+						        bufferChannel = new EmbeddedChannel(
+						        		new HttpResponseDecoder(), 
+						        		new HttpContentDecompressor(), 
+						        		new HttpObjectAggregator(1 * 1024 * 1024));
+						        
+						        StringBuffer headerBuffer = new StringBuffer();
+						        String[] headerLines = response.toString().split("\\n");
+						        for (int i = 1; i < headerLines.length; i++) {
+						        	headerBuffer.append(headerLines[i] + "\r\n");
+						        }
+						        headerBuffer.append("\r\n");
+						        String parsedHeader = headerBuffer.toString();
+						        
+						        ByteBuf buf = Unpooled.copiedBuffer(parsedHeader.getBytes(CharsetUtil.US_ASCII));
+						        bufferChannel.writeInbound(buf);
+							}
+						} else if (httpObject instanceof DefaultHttpContent) {
+							if (bufferChannel != null) {
+								DefaultHttpContent httpContent = (DefaultHttpContent)httpObject;
+								bufferChannel.writeInbound(Unpooled.wrappedBuffer(httpContent.content()).retain());
+							}
+						} else if (filter != null && httpObject instanceof FullHttpResponse) {
 							filter.processResponse(new LittleProxyResponse((FullHttpResponse)httpObject));
-						}						
+						}
 						return httpObject;
 					};
 					
-//				    @Override
-//				    public void proxyToServerConnectionSucceeded(ChannelHandlerContext serverCtx) {
-//				        ChannelPipeline pipeline = serverCtx.pipeline();
-//				        if (pipeline.get("inflater") != null) {
-//				            pipeline.remove("inflater");
-//				        }
-//				        if (pipeline.get("aggregator") != null) {
-//				            pipeline.remove("aggregator");
-//				        }
-//				        super.proxyToServerConnectionSucceeded(serverCtx);
-//				    }
+					@Override
+				    public void serverToProxyResponseReceived() {
+						if (bufferChannel != null) {
+							filter.processResponse(new LittleProxyResponse((FullHttpResponse)bufferChannel.readInbound()));
+							bufferChannel.close();
+							bufferChannel = null;
+						}
+				    }					
 				};
-			};
-			
-			@Override
-			public int getMaximumRequestBufferSizeInBytes() {
-				return 0;
-			};
-
-			@Override
-			public int getMaximumResponseBufferSizeInBytes() {
-				return 1 * 1024 * 1024;
-			};
+			};			
 		};
 	}
 }

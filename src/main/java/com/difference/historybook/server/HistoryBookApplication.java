@@ -17,13 +17,16 @@
 package com.difference.historybook.server;
 
 import java.nio.file.Paths;
+import java.util.function.Predicate;
 
 import com.difference.historybook.index.Index;
 import com.difference.historybook.index.lucene.LuceneIndex;
 import com.difference.historybook.proxy.Proxy;
 import com.difference.historybook.proxy.ProxyFilterFactory;
+import com.difference.historybook.proxy.ProxyResponseInfo;
 import com.difference.historybook.proxy.littleproxy.LittleProxy;
 import com.difference.historybook.proxyfilter.IndexingProxyFilterFactory;
+import com.difference.historybook.proxyfilter.IndexingProxyResponseInfoSelector;
 import com.difference.historybook.resources.CollectionResource;
 
 import io.dropwizard.Application;
@@ -53,7 +56,10 @@ public class HistoryBookApplication extends Application<HistoryBookConfiguration
 	public void run(HistoryBookConfiguration configuration, Environment environment) throws Exception {
 		final Index index = new LuceneIndex(Paths.get(configuration.getDataDirectory()));
 		final ProxyFilterFactory filterFactory = new IndexingProxyFilterFactory(index, configuration.getDefaultCollection());
-		final Proxy proxy = new LittleProxy().setFilterFactory(filterFactory);
+		final Predicate<ProxyResponseInfo> selector = new IndexingProxyResponseInfoSelector();
+		final Proxy proxy = new LittleProxy()
+				.setFilterFactory(filterFactory)
+				.setResponseFilterSelector(selector);
 		
 		final CollectionResource collectionResource = new CollectionResource(index); 
 		environment.jersey().register(collectionResource);

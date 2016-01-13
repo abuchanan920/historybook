@@ -16,8 +16,11 @@
 
 package com.difference.historybook.server;
 
+import java.util.function.Predicate;
+
 import com.difference.historybook.proxy.Proxy;
 import com.difference.historybook.proxy.ProxyFilterFactory;
+import com.difference.historybook.proxy.ProxyResponseInfo;
 
 import io.dropwizard.lifecycle.Managed;
 
@@ -47,6 +50,12 @@ public class ManagedProxy implements Proxy, Managed {
 	@Override
 	public Proxy setFilterFactory(ProxyFilterFactory factory) {
 		proxy.setFilterFactory(factory);
+		return this;
+	}
+
+	@Override
+	public Proxy setResponseFilterSelector(Predicate<ProxyResponseInfo> selector) {
+		proxy.setResponseFilterSelector(selector);
 		return this;
 	}
 

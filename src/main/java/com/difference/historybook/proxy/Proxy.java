@@ -16,10 +16,13 @@
 
 package com.difference.historybook.proxy;
 
+import java.util.function.Predicate;
+
 /**
  * An abstract interface to a web proxy service
  */
 public interface Proxy {
+	
 	/**
 	 * Start the web proxy service
 	 * 
@@ -40,4 +43,14 @@ public interface Proxy {
 	 * @return        this for method call chaining
 	 */
 	public Proxy setFilterFactory(ProxyFilterFactory factory);
+	
+	/**
+	 * Specify a @Predicate to use to determine whether a @ProxyResponse will be required.
+	 * This is done early in the streaming of a response by peeking at the headers to determine
+	 * whether the content will need to be buffered and decompressed for use.
+	 * 
+	 * @param selector a @Predicate that, given a @ProxyResponseInfo, determines whether a response should be buffered, decompressed, and passed to the filter for processing.
+	 * @return	this for method call chaining
+	 */
+	public Proxy setResponseFilterSelector(Predicate<ProxyResponseInfo> selector);
 }

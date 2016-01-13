@@ -42,6 +42,7 @@ public class LittleProxyResponse implements ProxyResponse {
 
 	@Override
 	public int getStatus() {
+		if (response == null || response.getStatus() == null) return -1;
 		return response.getStatus().code();
 	}
 
@@ -49,8 +50,10 @@ public class LittleProxyResponse implements ProxyResponse {
 	public Map<String, String> getHeaders() {
 		if (headers == null) {
 			headers = new HashMap<>();
-			for (Entry<String,String> entry : response.headers()) {
-				headers.put(entry.getKey(), entry.getValue());
+			if (response != null && response.headers() != null) {
+				for (Entry<String,String> entry : response.headers()) {
+					headers.put(entry.getKey(), entry.getValue());
+				}
 			}
 		}
 		
@@ -69,6 +72,7 @@ public class LittleProxyResponse implements ProxyResponse {
 			bytes = new byte[length];
 			buf.getBytes(buf.readerIndex(), bytes);
 		}
+		buf.release();
 		return bytes;
 	}
 
