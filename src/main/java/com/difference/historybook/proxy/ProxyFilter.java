@@ -30,5 +30,5 @@ public interface ProxyFilter {
 	 * Perform arbitrary processing based on a given @ProxyResponse
 	 * @param response 
 	 */
-public void processResponse(ProxyResponse response);
+	public void processResponse(ProxyResponse response);
 }
