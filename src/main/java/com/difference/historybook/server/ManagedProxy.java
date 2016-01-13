@@ -48,6 +48,11 @@ public class ManagedProxy implements Proxy, Managed {
 	}
 
 	@Override
+	public Proxy setPort(int port) {
+		return proxy.setPort(port);
+	}
+
+	@Override
 	public Proxy setFilterFactory(ProxyFilterFactory factory) {
 		proxy.setFilterFactory(factory);
 		return this;

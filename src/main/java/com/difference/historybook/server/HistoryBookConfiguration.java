@@ -29,6 +29,8 @@ public class HistoryBookConfiguration extends Configuration {
 	@NotEmpty
 	private String dataDirectory = System.getProperty("user.home") + "/Library/Application Support/HistoryBook";
 	private String defaultCollection = "default";
+	private int maxBufferSize = 1 * 1024 * 1024;
+	private int proxyPort = 8082;
 	
 	/**
 	 * @return Directory index will be created within
@@ -61,5 +63,37 @@ public class HistoryBookConfiguration extends Configuration {
 	public void setDefaultCollection(String defaultCollection) {
 		this.defaultCollection = defaultCollection;
 	}
-	
+
+	/**
+	 * @return maximum amount of content to buffer for a page for indexing
+	 */
+	@JsonProperty
+	public int getMaxBufferSize() {
+		return maxBufferSize;
+	}
+
+	/**
+	 * @param maxBufferSize maximum amount of content to buffer for a page for indexing
+	 */
+	@JsonProperty
+	public void setMaxBufferSize(int maxBufferSize) {
+		this.maxBufferSize = maxBufferSize;
+	}
+
+	/**
+	 * @return port to run proxy service on
+	 */
+	@JsonProperty
+	public int getProxyPort() {
+		return proxyPort;
+	}
+
+	/**
+	 * @param proxyPort port to run proxy service on
+	 */
+	@JsonProperty
+	public void setProxyPort(int proxyPort) {
+		this.proxyPort = proxyPort;
+	}
+		
 }

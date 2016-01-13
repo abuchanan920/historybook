@@ -38,6 +38,13 @@ public interface Proxy {
 	public void stop() throws Exception;
 	
 	/**
+	 * Specify the port to run the proxy server on. May not take affect until next start.
+	 * @param port port to run the proxy server on
+	 * @return this for method chaining
+	 */
+	public Proxy setPort(int port);
+	
+	/**
 	 * Specify a @ProxyFilterFactory to use in creating @ProxyFilter instances for each proxy request/response
 	 * @param factory the @ProxyFilterFactory to use in creating @ProxyFilter instances for each proxy request/response
 	 * @return        this for method call chaining

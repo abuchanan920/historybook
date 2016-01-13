@@ -58,8 +58,10 @@ public class HistoryBookApplication extends Application<HistoryBookConfiguration
 		final ProxyFilterFactory filterFactory = new IndexingProxyFilterFactory(index, configuration.getDefaultCollection());
 		final Predicate<ProxyResponseInfo> selector = new IndexingProxyResponseInfoSelector();
 		final Proxy proxy = new LittleProxy()
+				.setPort(configuration.getProxyPort())
 				.setFilterFactory(filterFactory)
-				.setResponseFilterSelector(selector);
+				.setResponseFilterSelector(selector)
+				.setMaxBufferSize(configuration.getMaxBufferSize());
 		
 		final CollectionResource collectionResource = new CollectionResource(index); 
 		environment.jersey().register(collectionResource);

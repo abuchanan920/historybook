@@ -59,16 +59,35 @@ public class LittleProxy implements Proxy {
 	private Predicate<ProxyResponseInfo> selector;
 	
 	private HttpProxyServer proxy = null;
+	private int port = 8080;
+	private int maxBufferSize = 1 * 1024 * 1024;
 	
 	@Override
-	public Proxy setFilterFactory(ProxyFilterFactory filterFactory) {
+	public LittleProxy setPort(int port) {
+		this.port = port;
+		return this;
+	}
+
+	@Override
+	public LittleProxy setFilterFactory(ProxyFilterFactory filterFactory) {
 		this.filterFactory = filterFactory;
 		return this;
 	}
 	
 	@Override
-	public Proxy setResponseFilterSelector(Predicate<ProxyResponseInfo> selector) {
+	public LittleProxy setResponseFilterSelector(Predicate<ProxyResponseInfo> selector) {
 		this.selector = selector;
+		return this;
+	}
+	
+	/**
+	 * Set the maximum page size to buffer for selected responses
+	 * 
+	 * @param size size in bytes
+	 * @return this for method chaining
+	 */
+	public LittleProxy setMaxBufferSize(int size) {
+		this.maxBufferSize = size;
 		return this;
 	}
 
@@ -76,7 +95,7 @@ public class LittleProxy implements Proxy {
 	public void start() {
 		if (proxy == null) {
 			proxy = DefaultHttpProxyServer.bootstrap()
-					.withPort(8082)
+					.withPort(port)
 					.withFiltersSource(getFiltersSource())
 					.start();
 		}
@@ -121,7 +140,7 @@ public class LittleProxy implements Proxy {
 						        bufferChannel = new EmbeddedChannel(
 						        		new HttpResponseDecoder(), 
 						        		new HttpContentDecompressor(), 
-						        		new HttpObjectAggregator(1 * 1024 * 1024));
+						        		new HttpObjectAggregator(maxBufferSize));
 						        
 						        StringBuffer headerBuffer = new StringBuffer();
 						        String[] headerLines = response.toString().split("\\n");

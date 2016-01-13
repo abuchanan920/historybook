@@ -56,7 +56,7 @@ public abstract class ProxyTest {
 	                .withHeader("Content-Type", "text/html")
 	                .withBody(body)));
 		
-		Proxy proxy = getProxy();
+		Proxy proxy = getProxy().setPort(PROXY_PORT);
 		try {
 			proxy.start();
 			
@@ -83,7 +83,7 @@ public abstract class ProxyTest {
 	                .withHeader("Content-Type", "text/html")
 	                .withBody(body)));
 		
-		Proxy proxy = getProxy();
+		Proxy proxy = getProxy().setPort(PROXY_PORT);
 		try {
 			proxy.start();
 			
@@ -115,7 +115,7 @@ public abstract class ProxyTest {
 	                .withHeader("Content-Type", "text/html")
 	                .withBody(body)));
 
-		Proxy proxy = getProxy();
+		Proxy proxy = getProxy().setPort(PROXY_PORT);
 		
 		ProxyFilter filter = mock(ProxyFilter.class);
 		ProxyFilterFactory factory = mock(ProxyFilterFactory.class);
