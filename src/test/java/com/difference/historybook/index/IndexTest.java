@@ -64,4 +64,42 @@ public abstract class IndexTest {
 		}
 	}
 
+	@Test
+	public void testCollectionFiltering() {
+		try {
+			try (Index index = getIndex()){
+				Instant timestamp = Instant.now();
+
+				String url1 = "http://www.difference.com";
+				String collection1 = "collection1";
+				String body1 = "Testing Doc1";
+				index.indexPage(collection1, url1, timestamp, body1);
+				
+				String url2 = "http://does.not.exist.com";
+				String collection2 = "collection2";
+				String body2 = "Testing Doc2";
+				index.indexPage(collection2, url2, timestamp, body2);
+				
+				SearchResultWrapper wrapper = index.search(collection1, "testing", 0, 10);
+				assertEquals(1, wrapper.getResults().size());
+				
+				SearchResult result = wrapper.getResults().get(0);
+				assertEquals(collection1, result.getCollection());
+				assertEquals(url1, result.getUrl());
+				assertTrue(result.getScore() > 0);
+				
+				wrapper = index.search(collection2, "testing", 0, 10);
+				assertEquals(1, wrapper.getResults().size());
+				
+				result = wrapper.getResults().get(0);
+				assertEquals(collection2, result.getCollection());
+				assertEquals(url2, result.getUrl());
+				assertTrue(result.getScore() > 0);
+			} catch (IndexException e) {
+				fail(e.getLocalizedMessage());
+			}
+		} catch (Exception e) {
+			fail(e.getLocalizedMessage());
+		}
+	}
 }

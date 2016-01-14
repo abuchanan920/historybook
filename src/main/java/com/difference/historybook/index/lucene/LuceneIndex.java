@@ -30,12 +30,16 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.highlight.Fragmenter;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
@@ -131,7 +135,11 @@ public class LuceneIndex implements Index {
 			int offset, int size) throws IndexException {
 		try {
 			//TODO: make age be a component in the ranking?
-			Query q = parser.parse(query);
+			BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
+			queryBuilder.add(parser.parse(query), Occur.MUST);
+			queryBuilder.add(new TermQuery(new Term(IndexDocumentAdapter.FIELD_COLLECTION, collection)), Occur.FILTER);
+			Query q = queryBuilder.build();
+			
 			QueryScorer queryScorer = new QueryScorer(q, IndexDocumentAdapter.FIELD_SEARCH);
 			Fragmenter fragmenter = new SimpleSpanFragmenter(queryScorer);
 			Highlighter highlighter = new Highlighter(queryScorer);

@@ -42,7 +42,7 @@ public class IndexDocumentAdapter {
 	private static final Logger LOG = LoggerFactory.getLogger(IndexDocumentAdapter.class);
 
 	public static final String FIELD_SEARCH = "body";
-	private static final String FIELD_COLLECTION = "collection";
+	public static final String FIELD_COLLECTION = "collection";
 	private static final String FIELD_URL = "url";
 	private static final String FIELD_DOMAIN = "domain";
 	private static final String FIELD_TIMESTAMP = "timestamp";
