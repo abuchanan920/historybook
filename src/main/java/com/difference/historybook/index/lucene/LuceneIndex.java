@@ -39,7 +39,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.grouping.GroupingSearch;
+import org.apache.lucene.search.grouping.TopGroups;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.highlight.Fragmenter;
 import org.apache.lucene.search.highlight.Highlighter;
@@ -146,12 +147,15 @@ public class LuceneIndex implements Index {
 			Highlighter highlighter = new Highlighter(queryScorer);
 			highlighter.setTextFragmenter(fragmenter);
 			
-			TopDocs docs = searcher.search(q, offset + size);
-			ScoreDoc[] hits = docs.scoreDocs;
+			GroupingSearch gsearch = new GroupingSearch(IndexDocumentAdapter.FIELD_URL_GROUP)
+					.setGroupDocsLimit(1)
+					.setAllGroups(true)
+					.setIncludeMaxScore(true);
+			TopGroups<?> groups = gsearch.search(searcher, q, offset, size);
 			
 			ArrayList<SearchResult> results = new ArrayList<>(size);
-			for (int i = offset; i < offset + size && i < hits.length; i++) {
-				ScoreDoc scoreDoc = hits[i];
+			for (int i = offset; i < offset + size && i < groups.groups.length; i++) {
+				ScoreDoc scoreDoc = groups.groups[i].scoreDocs[0];
 				Document luceneDoc = searcher.doc(scoreDoc.doc);
 				IndexDocumentAdapter doc = new IndexDocumentAdapter(luceneDoc);
 
@@ -185,7 +189,7 @@ public class LuceneIndex implements Index {
 					.setQuery(query)
 					.setOffset(offset)
 					.setMaxResultsRequested(size)
-					.setResultCount(docs.totalHits)
+					.setResultCount(groups.totalGroupCount)
 					.setResults(results);
 			
 			if (includeDebug) {

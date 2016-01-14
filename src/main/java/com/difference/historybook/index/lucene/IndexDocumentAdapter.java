@@ -21,9 +21,11 @@ import java.time.Instant;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.util.BytesRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +45,8 @@ public class IndexDocumentAdapter {
 
 	public static final String FIELD_SEARCH = "body";
 	public static final String FIELD_COLLECTION = "collection";
-	private static final String FIELD_URL = "url";
+	public static final String FIELD_URL = "url";
+	public static final String FIELD_URL_GROUP = "url-group";
 	private static final String FIELD_DOMAIN = "domain";
 	private static final String FIELD_TIMESTAMP = "timestamp";
 	private static final String FIELD_TIMESTAMP_TEXT = "timestampText";
@@ -88,6 +91,7 @@ public class IndexDocumentAdapter {
 	 * @return this for method chaining
 	 */
 	public IndexDocumentAdapter setUrl(String url) {
+		doc.add(new SortedDocValuesField(FIELD_URL_GROUP, new BytesRef(url)));
 		doc.add(new StringField(FIELD_URL, url, Field.Store.YES));
 		setDomainField(url);
 		return this;
