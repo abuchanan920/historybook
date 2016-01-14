@@ -153,7 +153,7 @@ public class LuceneIndex implements Index {
 				ScoreDoc scoreDoc = hits[i];
 				Document luceneDoc = searcher.doc(scoreDoc.doc);
 				IndexDocumentAdapter doc = new IndexDocumentAdapter(luceneDoc);
-				//TODO: need to create a reasonable snippet
+
 				TokenStream tokenStream = TokenSources.getTokenStream(
 						IndexDocumentAdapter.FIELD_SEARCH, 
 						reader.getTermVectors(scoreDoc.doc), 
@@ -172,7 +172,12 @@ public class LuceneIndex implements Index {
 						snippet,
 						scoreDoc.score));
 			}
-			return new SearchResultWrapper().setResults(results);
+			return new SearchResultWrapper()
+					.setQuery(query)
+					.setOffset(offset)
+					.setMaxResultsRequested(size)
+					.setResultCount(docs.totalHits)
+					.setResults(results);
 			
 		} catch (IOException | ParseException | InvalidTokenOffsetsException e) {
 			LOG.error(e.getLocalizedMessage());

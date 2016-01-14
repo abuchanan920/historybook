@@ -48,6 +48,11 @@ public abstract class IndexTest {
 				SearchResultWrapper wrapper = index.search(collection, "broadcast", 0, 10);
 				assertEquals(1, wrapper.getResults().size());
 				
+				assertEquals("broadcast", wrapper.getQuery());
+				assertEquals(0, wrapper.getOffset());
+				assertEquals(10, wrapper.getMaxResultsRequested());
+				assertEquals(1, wrapper.getResultCount());
+				
 				SearchResult result = wrapper.getResults().get(0);
 				assertEquals(collection, result.getCollection());
 				assertEquals(url1, result.getUrl());

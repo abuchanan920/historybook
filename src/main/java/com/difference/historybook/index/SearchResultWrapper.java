@@ -23,7 +23,47 @@ import java.util.List;
  * along with relevant search result metadata.
  */
 public class SearchResultWrapper {
+	private String query;
+	private int offset;
+	private int maxResultsRequested;
+	private int resultCount;
 	private List<SearchResult> results;
+
+	public String getQuery() {
+		return query;
+	}
+
+	public SearchResultWrapper setQuery(String query) {
+		this.query = query;
+		return this;
+	}
+
+	public int getOffset() {
+		return offset;
+	}
+
+	public SearchResultWrapper setOffset(int offset) {
+		this.offset = offset;
+		return this;
+	}
+
+	public int getMaxResultsRequested() {
+		return maxResultsRequested;
+	}
+
+	public SearchResultWrapper setMaxResultsRequested(int maxResultsRequested) {
+		this.maxResultsRequested = maxResultsRequested;
+		return this;
+	}
+
+	public int getResultCount() {
+		return resultCount;
+	}
+
+	public SearchResultWrapper setResultCount(int resultCount) {
+		this.resultCount = resultCount;
+		return this;
+	}
 
 	public List<SearchResult> getResults() {
 		return results;
@@ -32,6 +72,6 @@ public class SearchResultWrapper {
 	public SearchResultWrapper setResults(List<SearchResult> results) {
 		this.results = results;
 		return this;
-	}
+	}	
 	
 }
