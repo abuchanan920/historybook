@@ -28,6 +28,8 @@ Start browsing. As you browse, the pages you visit will be added to the search i
 
 To perform a search, point your browser to [http://localhost:8080/search]()
 
+Note that you can get search engine debug information (useful for development) by appending "&debug=true" to the URL.
+
 If you are using Chrome and want to bulk load your browser history, take a look at the historybook-import project.
 
 # Architecture

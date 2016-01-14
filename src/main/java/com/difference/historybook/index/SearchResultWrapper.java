@@ -27,6 +27,7 @@ public class SearchResultWrapper {
 	private int offset;
 	private int maxResultsRequested;
 	private int resultCount;
+	private String debugInfo;
 	private List<SearchResult> results;
 
 	public String getQuery() {
@@ -72,6 +73,14 @@ public class SearchResultWrapper {
 	public SearchResultWrapper setResults(List<SearchResult> results) {
 		this.results = results;
 		return this;
-	}	
+	}
+
+	public String getDebugInfo() {
+		return debugInfo;
+	}
+
+	public void setDebugInfo(String debugInfo) {
+		this.debugInfo = debugInfo;
+	}
 	
 }

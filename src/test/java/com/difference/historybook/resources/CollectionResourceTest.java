@@ -71,15 +71,15 @@ public class CollectionResourceTest {
 
 		Index index = mock(Index.class);
 		List<SearchResult> results = new LinkedList<>();
-		results.add(new SearchResult("key1", "testCollection", "title1", "http://does.not.exist/1", "not.exist", "timestamp1", "snippet1", 1.0f));
-		results.add(new SearchResult("key2", "testCollection", "title2", "http://does.not.exist/2", "not.exist", "timestamp2", "snippet2", 0.7f));
+		results.add(new SearchResult("key1", "testCollection", "title1", "http://does.not.exist/1", "not.exist", "timestamp1", "snippet1", null, 1.0f));
+		results.add(new SearchResult("key2", "testCollection", "title2", "http://does.not.exist/2", "not.exist", "timestamp2", "snippet2", null, 0.7f));
 		SearchResultWrapper wrapper = new SearchResultWrapper().setResults(results);
 		when(index.search(collection, query, Integer.parseInt(offsetString), Integer.parseInt(sizeString))).thenReturn(wrapper);
 		
 		CollectionResource resource = new CollectionResource(index);
 		
 		
-		Response response = resource.getSearchResult(collection, query, offsetString, sizeString);
+		Response response = resource.getSearchResult(collection, query, offsetString, sizeString, false);
 		assertEquals(200, response.getStatus());
 		verify(index).search(collection, query, Integer.parseInt(offsetString), Integer.parseInt(sizeString));
 		assertEquals(wrapper, response.getEntity());

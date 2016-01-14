@@ -28,6 +28,7 @@ public class SearchResult {
 	private final String domain;
 	private final String timestamp;
 	private final String snippet;
+	private final String debugInfo;
 	private final float score;
 	
 	public SearchResult(
@@ -38,6 +39,7 @@ public class SearchResult {
 			String domain,
 			String timestamp,
 			String snippet,
+			String debugInfo,
 			float score) {
 		this.key = key;
 		this.collection = collection;
@@ -46,6 +48,7 @@ public class SearchResult {
 		this.domain = domain;
 		this.timestamp = timestamp;
 		this.snippet = snippet;
+		this.debugInfo = debugInfo;
 		this.score = score;
 	}
 	
@@ -75,6 +78,10 @@ public class SearchResult {
 
 	public String getSnippet() {
 		return snippet;
+	}
+	
+	public String getDebugInfo() {
+		return debugInfo;
 	}
 	
 	public float getScore() {

@@ -45,5 +45,21 @@ public interface Index extends AutoCloseable {
 	 * @see SearchResultWrapper
 	 * @throws IndexException
 	 */
-	public SearchResultWrapper search(String collection, String query, int offset, int size) throws IndexException;
+	default public SearchResultWrapper search(String collection, String query, int offset, int size) throws IndexException {
+		return search(collection, query, offset, size, false);
+	}
+
+	/**
+	 * Executes a given query against the index in the specified collection namespace and returns up to the requested page size of results.
+	 * 
+	 * @param collection        a namespace for an index. Allows storing multiple indexes within the same backing store.
+	 * @param query             the search query to execute. The supported syntax of this is determined by the underlying @Index implementation
+	 * @param offset            the 0-based offset to begin retrieving results from. Specifying an offset greater than the actual number of results will result in an empty result.
+	 * @param size              the maximum number of results to return. The actual number of results returned may be fewer.
+	 * @param includeDebug		include implementation dependent debug information for search result
+	 * @return                  the search results for the specified query along with relevant metadata.
+	 * @see SearchResultWrapper
+	 * @throws IndexException
+	 */
+	public SearchResultWrapper search(String collection, String query, int offset, int size, boolean includeDebug) throws IndexException;
 }

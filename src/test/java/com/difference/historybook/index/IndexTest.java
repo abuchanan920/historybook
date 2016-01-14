@@ -107,4 +107,36 @@ public abstract class IndexTest {
 			fail(e.getLocalizedMessage());
 		}
 	}
+	
+	@Test
+	public void testDebugInfo() {
+		try {
+			try (Index index = getIndex()){
+				Instant timestamp = Instant.now();
+
+				String url = "http://www.difference.com";
+				String collection = "collection1";
+				String body = "Testing Doc1";
+				index.indexPage(collection, url, timestamp, body);
+				
+				SearchResultWrapper wrapper = index.search(collection, "testing", 0, 10);
+				assertEquals(1, wrapper.getResults().size());
+				assertTrue(wrapper.getDebugInfo() == null);
+				
+				SearchResult result = wrapper.getResults().get(0);
+				assertTrue(result.getDebugInfo() == null);
+	
+				wrapper = index.search(collection, "testing", 0, 10, true);
+				assertEquals(1, wrapper.getResults().size());
+				assertNotNull(wrapper.getDebugInfo());
+
+				result = wrapper.getResults().get(0);
+				assertNotNull(result.getDebugInfo());
+			} catch (IndexException e) {
+				fail(e.getLocalizedMessage());
+			}
+		} catch (Exception e) {
+			fail(e.getLocalizedMessage());
+		}
+	}
 }

@@ -34,6 +34,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -132,7 +133,7 @@ public class LuceneIndex implements Index {
 	@Override
 	public SearchResultWrapper search(
 			String collection, String query, 
-			int offset, int size) throws IndexException {
+			int offset, int size, boolean includeDebug) throws IndexException {
 		try {
 			//TODO: make age be a component in the ranking?
 			BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
@@ -162,6 +163,12 @@ public class LuceneIndex implements Index {
 						highlighter.getMaxDocCharsToAnalyze() - 1);
 	            String snippet = highlighter.getBestFragment(tokenStream, luceneDoc.get(IndexDocumentAdapter.FIELD_SEARCH));
 	            
+	            String debugInfo = null;
+	            if (includeDebug) {
+	            	Explanation explanation = searcher.explain(q, scoreDoc.doc);
+	            	debugInfo = explanation.toString();
+	            }
+	            
 				results.add(new SearchResult(
 						doc.getKey(),
 						doc.getCollection(),
@@ -170,14 +177,22 @@ public class LuceneIndex implements Index {
 						doc.getDomain(),
 						doc.getTimestampText(),
 						snippet,
+						debugInfo,
 						scoreDoc.score));
 			}
-			return new SearchResultWrapper()
+			
+			SearchResultWrapper wrapper = new SearchResultWrapper()
 					.setQuery(query)
 					.setOffset(offset)
 					.setMaxResultsRequested(size)
 					.setResultCount(docs.totalHits)
 					.setResults(results);
+			
+			if (includeDebug) {
+				wrapper.setDebugInfo(q.toString());
+			}
+			
+			return wrapper;
 			
 		} catch (IOException | ParseException | InvalidTokenOffsetsException e) {
 			LOG.error(e.getLocalizedMessage());

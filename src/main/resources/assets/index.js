@@ -2,6 +2,9 @@ $(document).ready(function () {
    var query = GetParameterValues('q');
    if (query) query = decodeURIComponent(query);
 
+   var debug = GetParameterValues('debug');
+   if (debug) $('.debug').show();
+
    $('.search-form').submit(function(e) {
      e.preventDefault();
      window.location = '/search?q=' + encodeURIComponent($('#query').val());
@@ -10,17 +13,21 @@ $(document).ready(function () {
    if (query) {
      $('#query').val(query);
 
+     var queryUrl = '/collections/default?q=' + encodeURIComponent(query);
+     if (debug == 'true') queryUrl += '&debug=true';
+
      $.ajax({
-       url: '/collections/default?q=' + encodeURIComponent(query)
+       url: queryUrl
       })
       .done(function(msg) {
         if (msg.results.length > 0) {
           $('#status').text("Search results for " + query);
+          if (msg.debugInfo) $('#status-debug').text(msg.debugInfo);
 
           for (var i = 0; i < msg.results.length; i++) {
             var result = msg.results[i];
 
-            var $html = $([
+            var html = [
               "<div class='row'>",
               "  <div class='col-md-12'>",
               "    <h4><a href='" + result.url + "'>" + result.title + "</a></h4>",
@@ -36,9 +43,18 @@ $(document).ready(function () {
               "  </div>",
               "  <div class='col-md-12'>",
               "    <p>" + result.snippet + "</p>",
-              "  </div>",
-              "</div>"
-            ].join("\n"));
+              "  </div>"
+            ];
+            if (result.debugInfo) {
+              html = html.concat([
+                "  <div class='col-md-12'>",
+                "    <pre>" + result.debugInfo + "</pre>",
+                "  </div>"
+              ]);
+            }
+            html.push("</div>");
+
+            var $html = $(html.join("\n"));
 
             $('#results').append($html);
           }

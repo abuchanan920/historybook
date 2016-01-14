@@ -129,12 +129,13 @@ public class CollectionResource {
 			@PathParam("collection") String collection,
 			@QueryParam("q") String query,
 			@QueryParam("offset") @DefaultValue("0") String offsetString,
-			@QueryParam("size") @DefaultValue("10") String sizeString
+			@QueryParam("size") @DefaultValue("10") String sizeString,
+			@QueryParam("debug") @DefaultValue("false") boolean debugFlag
 			) throws NumberFormatException, IndexException {
-		LOG.info("Query: {} query:{} offset:{} size:{}", collection, query, offsetString, sizeString);
+		LOG.info("Query: {} query:{} offset:{} size:{} debug:{}", collection, query, offsetString, sizeString, debugFlag);
 		SearchResultWrapper results = index.search(
 				collection, query, 
-				Integer.parseInt(offsetString), Integer.parseInt(sizeString));
+				Integer.parseInt(offsetString), Integer.parseInt(sizeString), debugFlag);
 		return Response.ok().entity(results).build();
 	}
 
