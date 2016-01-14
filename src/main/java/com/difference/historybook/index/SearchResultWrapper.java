@@ -79,8 +79,9 @@ public class SearchResultWrapper {
 		return debugInfo;
 	}
 
-	public void setDebugInfo(String debugInfo) {
+	public SearchResultWrapper setDebugInfo(String debugInfo) {
 		this.debugInfo = debugInfo;
+		return this;
 	}
 	
 }
