@@ -64,6 +64,17 @@ public abstract class IndexTest {
 			fail(e.getLocalizedMessage());
 		}
 	}
+	
+	@Test
+	public void testNoResults() throws Exception {
+		try (Index index = getIndex()){
+			SearchResultWrapper wrapper = index.search("test", "broadcast", 0, 10);
+			assertEquals(0, wrapper.getResults().size());
+			assertEquals(0, wrapper.getResultCount());
+		} catch (IndexException e) {
+			fail(e.getLocalizedMessage());
+		}
+	}
 
 	@Test
 	public void testCollectionFiltering() throws Exception {

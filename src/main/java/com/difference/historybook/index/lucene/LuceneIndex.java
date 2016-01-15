@@ -189,7 +189,7 @@ public class LuceneIndex implements Index {
 					.setQuery(query)
 					.setOffset(offset)
 					.setMaxResultsRequested(size)
-					.setResultCount(groups.totalGroupCount)
+					.setResultCount(groups.totalGroupCount != null ? groups.totalGroupCount : 0)
 					.setResults(results);
 			
 			if (includeDebug) {
