@@ -35,6 +35,7 @@ import com.difference.historybook.proxy.ProxyFilter;
 import com.difference.historybook.proxy.ProxyFilterFactory;
 import com.difference.historybook.proxy.ProxyTransactionInfo;
 
+import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpRequest;
@@ -145,13 +146,10 @@ public class LittleProxy implements Proxy {
 							}
 						} else if (httpObject instanceof DefaultHttpContent && bufferChannel != null) {
 							DefaultHttpContent httpContent = (DefaultHttpContent)httpObject;
-							//TODO: Is there a way to do this without the copy?
-							bufferChannel.writeInbound(httpContent.copy());
+							bufferChannel.writeInbound(new DefaultHttpContent(Unpooled.wrappedBuffer(httpContent.content()).retain()));
 						} else if (httpObject instanceof LastHttpContent && bufferChannel != null) {
 							if (ProxyUtils.isLastChunk(httpObject)) {
-								LastHttpContent httpContent = (LastHttpContent)httpObject;
-								//TODO: Is there a way to do this without the copy?
-								bufferChannel.writeInbound(httpContent.copy());
+								bufferChannel.writeInbound(httpObject);
 								bufferChannel.finish();
 								filter.processResponse(new LittleProxyResponse((FullHttpResponse)bufferChannel.readInbound()));
 								bufferChannel.close();
