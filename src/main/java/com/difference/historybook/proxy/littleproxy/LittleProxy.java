@@ -26,6 +26,7 @@ import org.littleshoot.proxy.HttpFiltersSource;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
 import org.littleshoot.proxy.HttpProxyServer;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
+import org.littleshoot.proxy.impl.ProxyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +35,6 @@ import com.difference.historybook.proxy.ProxyFilter;
 import com.difference.historybook.proxy.ProxyFilterFactory;
 import com.difference.historybook.proxy.ProxyTransactionInfo;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpRequest;
@@ -47,7 +46,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseDecoder;
-import io.netty.util.CharsetUtil;
+import io.netty.handler.codec.http.LastHttpContent;
 
 /**
  * An implementation of @Proxy using LittleProxy which is based on a Netty core 
@@ -142,36 +141,27 @@ public class LittleProxy implements Proxy {
 						        		new HttpContentDecompressor(), 
 						        		new HttpObjectAggregator(maxBufferSize));
 						        
-						        StringBuffer headerBuffer = new StringBuffer();
-						        String[] headerLines = response.toString().split("\\n");
-						        for (int i = 1; i < headerLines.length; i++) {
-						        	headerBuffer.append(headerLines[i] + "\r\n");
-						        }
-						        headerBuffer.append("\r\n");
-						        String parsedHeader = headerBuffer.toString();
-						        
-						        ByteBuf buf = Unpooled.copiedBuffer(parsedHeader.getBytes(CharsetUtil.US_ASCII));
-						        bufferChannel.writeInbound(buf);
+						        bufferChannel.writeInbound(response);
 							}
-						} else if (httpObject instanceof DefaultHttpContent) {
-							if (bufferChannel != null) {
-								DefaultHttpContent httpContent = (DefaultHttpContent)httpObject;
-								bufferChannel.writeInbound(Unpooled.wrappedBuffer(httpContent.content()).retain());
+						} else if (httpObject instanceof DefaultHttpContent && bufferChannel != null) {
+							DefaultHttpContent httpContent = (DefaultHttpContent)httpObject;
+							//TODO: Is there a way to do this without the copy?
+							bufferChannel.writeInbound(httpContent.copy());
+						} else if (httpObject instanceof LastHttpContent && bufferChannel != null) {
+							if (ProxyUtils.isLastChunk(httpObject)) {
+								LastHttpContent httpContent = (LastHttpContent)httpObject;
+								//TODO: Is there a way to do this without the copy?
+								bufferChannel.writeInbound(httpContent.copy());
+								bufferChannel.finish();
+								filter.processResponse(new LittleProxyResponse((FullHttpResponse)bufferChannel.readInbound()));
+								bufferChannel.close();
+								bufferChannel = null;
 							}
 						} else if (filter != null && httpObject instanceof FullHttpResponse) {
 							filter.processResponse(new LittleProxyResponse((FullHttpResponse)httpObject));
 						}
 						return httpObject;
-					};
-					
-					@Override
-				    public void serverToProxyResponseReceived() {
-						if (bufferChannel != null) {
-							filter.processResponse(new LittleProxyResponse((FullHttpResponse)bufferChannel.readInbound()));
-							bufferChannel.close();
-							bufferChannel = null;
-						}
-				    }					
+					};					
 				};
 			};			
 		};
