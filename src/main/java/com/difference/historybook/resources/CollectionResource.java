@@ -104,7 +104,7 @@ public class CollectionResource {
 			Instant timestamp,
 			String body
 			) throws IndexException {
-		LOG.info("Received: {} {} {}", collection, url, timestamp.toString());
+		LOG.debug("Received: {} {} {}", collection, url, timestamp.toString());
 		index.indexPage(collection, url, timestamp, body);
 		return Response.accepted().build(); //TODO: What is the correct response code?
 	}
@@ -132,7 +132,7 @@ public class CollectionResource {
 			@QueryParam("size") @DefaultValue("10") String sizeString,
 			@QueryParam("debug") @DefaultValue("false") boolean debugFlag
 			) throws NumberFormatException, IndexException {
-		LOG.info("Query: {} query:{} offset:{} size:{} debug:{}", collection, query, offsetString, sizeString, debugFlag);
+		LOG.debug("Query: {} query:{} offset:{} size:{} debug:{}", collection, query, offsetString, sizeString, debugFlag);
 		SearchResultWrapper results = index.search(
 				collection, query, 
 				Integer.parseInt(offsetString), Integer.parseInt(sizeString), debugFlag);
