@@ -17,6 +17,8 @@
 package com.difference.historybook.proxyfilter;
 
 import java.time.Instant;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +37,8 @@ import com.google.common.base.Charsets;
 public class IndexingProxyFilter implements ProxyFilter {
 	private static final Logger LOG = LoggerFactory.getLogger(IndexingProxyFilter.class);
 
+	private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+	
 	private final Index index;
 	private final String defaultCollection;
 	
@@ -60,13 +64,14 @@ public class IndexingProxyFilter implements ProxyFilter {
 	public void processResponse(ProxyResponse response) {
 		if (new IndexingProxyResponseInfoSelector().test(new ProxyTransactionInfo(url, response.getStatus(), response.getHeaders()))) {
 			String content = response.getContentAsString(Charsets.UTF_8); //TODO: Need to use actual charset...
-			try {
-				LOG.info("INDEXING {}", url);
-				//TODO: should run in separate thread
-				index.indexPage(defaultCollection, url, Instant.now(), content);
-			} catch (IndexException e) {
-				LOG.error(e.getLocalizedMessage());
-			}
+			executor.submit(() -> {
+				try {
+					LOG.info("INDEXING {}", url);
+					index.indexPage(defaultCollection, url, Instant.now(), content);
+				} catch (IndexException e) {
+					LOG.error(e.getLocalizedMessage());
+				}
+			});
 		}
 	}
 
