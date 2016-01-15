@@ -32,6 +32,14 @@ public class HistoryBookConfiguration extends Configuration {
 	private int maxBufferSize = 1 * 1024 * 1024;
 	private int proxyPort = 8082;
 	
+	public HistoryBookConfiguration() {
+		super();
+		
+		//overrides
+		System.setProperty("dw.server.applicationConnectors[0].bindHost", "127.0.0.1");
+		System.setProperty("dw.server.adminConnectors[0].bindHost", "127.0.0.1");		
+	}
+	
 	/**
 	 * @return Directory index will be created within
 	 */
