@@ -94,7 +94,6 @@ public class LuceneIndex implements Index {
 
 			reader = DirectoryReader.open(writer, false);
 			searcher = new IndexSearcher(reader);
-			//TODO: need to filter to collection
 			parser = new QueryParser(IndexDocumentAdapter.FIELD_SEARCH, analyzer);
 		} catch (IOException e) {
 			LOG.error(e.getLocalizedMessage());
@@ -108,7 +107,6 @@ public class LuceneIndex implements Index {
 			String url, 
 			Instant timestamp, 
 			String body) throws IndexException {
-
 		HtmlTextExtractor extractor = new HtmlTextExtractor(body, url);
 		
 		Document doc = new IndexDocumentAdapter()
