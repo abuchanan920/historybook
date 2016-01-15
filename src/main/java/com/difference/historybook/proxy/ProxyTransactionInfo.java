@@ -19,15 +19,24 @@ package com.difference.historybook.proxy;
 import java.util.Map;
 
 /**
- * A container for the header information for a response
+ * A container for the meta information for a request/response
  */
-public class ProxyResponseInfo {
+public class ProxyTransactionInfo {
+	private final String url;
 	private final int status;
 	private final Map<String,String> headers;
 	
-	public ProxyResponseInfo(int status, Map<String,String> headers) {
+	public ProxyTransactionInfo(String url, int status, Map<String,String> headers) {
+		this.url = url;
 		this.status = status;
 		this.headers = headers;
+	}
+	
+	/**
+	 * @return return the URL of the page being fetched
+	 */
+	public String getUrl() {
+		return url;
 	}
 
 	/**

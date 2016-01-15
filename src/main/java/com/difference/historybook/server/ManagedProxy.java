@@ -20,7 +20,7 @@ import java.util.function.Predicate;
 
 import com.difference.historybook.proxy.Proxy;
 import com.difference.historybook.proxy.ProxyFilterFactory;
-import com.difference.historybook.proxy.ProxyResponseInfo;
+import com.difference.historybook.proxy.ProxyTransactionInfo;
 
 import io.dropwizard.lifecycle.Managed;
 
@@ -59,7 +59,7 @@ public class ManagedProxy implements Proxy, Managed {
 	}
 
 	@Override
-	public Proxy setResponseFilterSelector(Predicate<ProxyResponseInfo> selector) {
+	public Proxy setResponseFilterSelector(Predicate<ProxyTransactionInfo> selector) {
 		proxy.setResponseFilterSelector(selector);
 		return this;
 	}

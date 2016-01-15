@@ -59,5 +59,5 @@ public interface Proxy {
 	 * @param selector a @Predicate that, given a @ProxyResponseInfo, determines whether a response should be buffered, decompressed, and passed to the filter for processing.
 	 * @return	this for method call chaining
 	 */
-	public Proxy setResponseFilterSelector(Predicate<ProxyResponseInfo> selector);
+	public Proxy setResponseFilterSelector(Predicate<ProxyTransactionInfo> selector);
 }

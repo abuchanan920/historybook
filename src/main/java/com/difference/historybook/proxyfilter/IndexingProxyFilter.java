@@ -26,6 +26,7 @@ import com.difference.historybook.index.IndexException;
 import com.difference.historybook.proxy.ProxyFilter;
 import com.difference.historybook.proxy.ProxyRequest;
 import com.difference.historybook.proxy.ProxyResponse;
+import com.difference.historybook.proxy.ProxyTransactionInfo;
 import com.google.common.base.Charsets;
 
 /**
@@ -57,17 +58,14 @@ public class IndexingProxyFilter implements ProxyFilter {
 
 	@Override
 	public void processResponse(ProxyResponse response) {
-		if (response.getStatus() == 200) {
-			String contentType = response.getHeaders().get("Content-Type");
-			if (contentType != null && contentType.startsWith("text/html")) {
-				String content = response.getContentAsString(Charsets.UTF_8);
-				try {
-					LOG.info("INDEXING {}", url);
-					//TODO: should run in separate thread
-					index.indexPage(defaultCollection, url, Instant.now(), content);
-				} catch (IndexException e) {
-					LOG.error(e.getLocalizedMessage());
-				}
+		if (new IndexingProxyResponseInfoSelector().test(new ProxyTransactionInfo(url, response.getStatus(), response.getHeaders()))) {
+			String content = response.getContentAsString(Charsets.UTF_8); //TODO: Need to use actual charset...
+			try {
+				LOG.info("INDEXING {}", url);
+				//TODO: should run in separate thread
+				index.indexPage(defaultCollection, url, Instant.now(), content);
+			} catch (IndexException e) {
+				LOG.error(e.getLocalizedMessage());
 			}
 		}
 	}

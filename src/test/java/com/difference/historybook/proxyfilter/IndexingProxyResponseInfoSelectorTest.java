@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.difference.historybook.proxy.ProxyResponseInfo;
+import com.difference.historybook.proxy.ProxyTransactionInfo;
 
 public class IndexingProxyResponseInfoSelectorTest {
 
@@ -17,10 +17,10 @@ public class IndexingProxyResponseInfoSelectorTest {
 		headers.put("Content-Type", "text/html");
 
 		IndexingProxyResponseInfoSelector selector = new IndexingProxyResponseInfoSelector();
-		ProxyResponseInfo info1 = new ProxyResponseInfo(200, headers);
+		ProxyTransactionInfo info1 = new ProxyTransactionInfo("http://does.not.exist", 200, headers);
 		assertTrue(selector.test(info1));
 
-		ProxyResponseInfo info2 = new ProxyResponseInfo(500, headers);
+		ProxyTransactionInfo info2 = new ProxyTransactionInfo("http://does.not.exist", 500, headers);
 		assertFalse(selector.test(info2));
 	}
 	
@@ -29,11 +29,23 @@ public class IndexingProxyResponseInfoSelectorTest {
 		IndexingProxyResponseInfoSelector selector = new IndexingProxyResponseInfoSelector();
 		Map<String,String> headers = new HashMap<>();
 		headers.put("Content-Type", "text/html; charset=utf-8");
-		ProxyResponseInfo info1 = new ProxyResponseInfo(200, headers);
+		ProxyTransactionInfo info1 = new ProxyTransactionInfo("http://does.not.exist", 200, headers);
 		assertTrue(selector.test(info1));
 
 		headers.put("Content-Type", "image/jpg");
-		ProxyResponseInfo info2 = new ProxyResponseInfo(200, headers);
+		ProxyTransactionInfo info2 = new ProxyTransactionInfo("http://does.not.exist", 200, headers);
+		assertFalse(selector.test(info2));
+	}
+	
+	@Test
+	public void testHostname() {
+		IndexingProxyResponseInfoSelector selector = new IndexingProxyResponseInfoSelector();
+		Map<String,String> headers = new HashMap<>();
+		headers.put("Content-Type", "text/html; charset=utf-8");
+		ProxyTransactionInfo info1 = new ProxyTransactionInfo("http://does.not.exist", 200, headers);
+		assertTrue(selector.test(info1));
+
+		ProxyTransactionInfo info2 = new ProxyTransactionInfo("http://localhost", 200, headers);
 		assertFalse(selector.test(info2));
 	}
 

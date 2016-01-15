@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import com.difference.historybook.proxy.Proxy;
 import com.difference.historybook.proxy.ProxyFilter;
 import com.difference.historybook.proxy.ProxyFilterFactory;
-import com.difference.historybook.proxy.ProxyResponseInfo;
+import com.difference.historybook.proxy.ProxyTransactionInfo;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -56,7 +56,7 @@ public class LittleProxy implements Proxy {
 	private static final Logger LOG = LoggerFactory.getLogger(LittleProxy.class);
 
 	private ProxyFilterFactory filterFactory;
-	private Predicate<ProxyResponseInfo> selector;
+	private Predicate<ProxyTransactionInfo> selector;
 	
 	private HttpProxyServer proxy = null;
 	private int port = 8080;
@@ -75,7 +75,7 @@ public class LittleProxy implements Proxy {
 	}
 	
 	@Override
-	public LittleProxy setResponseFilterSelector(Predicate<ProxyResponseInfo> selector) {
+	public LittleProxy setResponseFilterSelector(Predicate<ProxyTransactionInfo> selector) {
 		this.selector = selector;
 		return this;
 	}
@@ -136,7 +136,7 @@ public class LittleProxy implements Proxy {
 								headers.put(e.getKey(), e.getValue());
 							});
 							
-							if (selector != null && selector.test(new ProxyResponseInfo(response.getStatus().code(), headers))) {
+							if (selector != null && selector.test(new ProxyTransactionInfo(originalRequest.getUri(), response.getStatus().code(), headers))) {
 						        bufferChannel = new EmbeddedChannel(
 						        		new HttpResponseDecoder(), 
 						        		new HttpContentDecompressor(), 

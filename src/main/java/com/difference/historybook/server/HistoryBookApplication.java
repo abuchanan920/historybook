@@ -23,7 +23,7 @@ import com.difference.historybook.index.Index;
 import com.difference.historybook.index.lucene.LuceneIndex;
 import com.difference.historybook.proxy.Proxy;
 import com.difference.historybook.proxy.ProxyFilterFactory;
-import com.difference.historybook.proxy.ProxyResponseInfo;
+import com.difference.historybook.proxy.ProxyTransactionInfo;
 import com.difference.historybook.proxy.littleproxy.LittleProxy;
 import com.difference.historybook.proxyfilter.IndexingProxyFilterFactory;
 import com.difference.historybook.proxyfilter.IndexingProxyResponseInfoSelector;
@@ -56,7 +56,7 @@ public class HistoryBookApplication extends Application<HistoryBookConfiguration
 	public void run(HistoryBookConfiguration configuration, Environment environment) throws Exception {
 		final Index index = new LuceneIndex(Paths.get(configuration.getDataDirectory()));
 		final ProxyFilterFactory filterFactory = new IndexingProxyFilterFactory(index, configuration.getDefaultCollection());
-		final Predicate<ProxyResponseInfo> selector = new IndexingProxyResponseInfoSelector();
+		final Predicate<ProxyTransactionInfo> selector = new IndexingProxyResponseInfoSelector();
 		final Proxy proxy = new LittleProxy()
 				.setPort(configuration.getProxyPort())
 				.setFilterFactory(filterFactory)
