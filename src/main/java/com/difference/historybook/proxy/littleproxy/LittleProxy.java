@@ -35,7 +35,6 @@ import com.difference.historybook.proxy.ProxyFilter;
 import com.difference.historybook.proxy.ProxyFilterFactory;
 import com.difference.historybook.proxy.ProxyTransactionInfo;
 
-import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpRequest;
@@ -142,24 +141,33 @@ public class LittleProxy implements Proxy {
 						        		new HttpContentDecompressor(), 
 						        		new HttpObjectAggregator(maxBufferSize));
 						        
-						        bufferChannel.writeInbound(response);
+						        DefaultHttpResponse copiedResponse = new DefaultHttpResponse(response.getProtocolVersion(), response.getStatus());
+						        copiedResponse.headers().add(response.headers());
+						        
+						        bufferChannel.writeInbound(copiedResponse);
 							}
 						} else if (httpObject instanceof DefaultHttpContent && bufferChannel != null) {
-							DefaultHttpContent httpContent = (DefaultHttpContent)httpObject;
-							bufferChannel.writeInbound(new DefaultHttpContent(Unpooled.wrappedBuffer(httpContent.content()).retain()));
+							DefaultHttpContent httpContent = (DefaultHttpContent)httpObject;							
+							bufferChannel.writeInbound(httpContent.copy());
+							
+							if (ProxyUtils.isLastChunk(httpObject)) processChunkedResponse();
 						} else if (httpObject instanceof LastHttpContent && bufferChannel != null) {
-							if (ProxyUtils.isLastChunk(httpObject)) {
-								bufferChannel.writeInbound(httpObject);
-								bufferChannel.finish();
-								filter.processResponse(new LittleProxyResponse((FullHttpResponse)bufferChannel.readInbound()));
-								bufferChannel.close();
-								bufferChannel = null;
-							}
+							LastHttpContent httpContent = (LastHttpContent)httpObject; 
+							bufferChannel.writeInbound(httpContent.copy());
+							processChunkedResponse();
 						} else if (filter != null && httpObject instanceof FullHttpResponse) {
 							filter.processResponse(new LittleProxyResponse((FullHttpResponse)httpObject));
 						}
 						return httpObject;
-					};					
+					};
+					
+					private void processChunkedResponse() {
+						bufferChannel.flush();
+						bufferChannel.finish();
+						FullHttpResponse fullResponse = (FullHttpResponse)bufferChannel.readInbound();
+						filter.processResponse(new LittleProxyResponse(fullResponse));
+						bufferChannel = null;
+					}
 				};
 			};			
 		};
