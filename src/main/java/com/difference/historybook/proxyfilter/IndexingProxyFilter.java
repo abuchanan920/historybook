@@ -37,7 +37,7 @@ import com.google.common.base.Charsets;
 public class IndexingProxyFilter implements ProxyFilter {
 	private static final Logger LOG = LoggerFactory.getLogger(IndexingProxyFilter.class);
 
-	private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+	private final ExecutorService executor;
 	
 	private final Index index;
 	private final String defaultCollection;
@@ -45,16 +45,28 @@ public class IndexingProxyFilter implements ProxyFilter {
 	private String url;
 	
 	/**
-	 * Constructor for IndexingProxyFilter
+	 * Constructor for IndexingProxyFilter that delegates indexing to a new single thread queue
 	 * 
 	 * @param index The @Index to submit the indexing request to
 	 * @param defaultCollection The collection namespace to use for indexing requests
 	 */
 	public IndexingProxyFilter(Index index, String defaultCollection) {
-		this.index = index;
-		this.defaultCollection = defaultCollection;
+		this(index, defaultCollection, Executors.newSingleThreadExecutor());
 	}
 	
+	/**
+	 * Constructor for IndexingProxyFilter
+	 * 
+	 * @param index The @Index to submit the indexing request to
+	 * @param defaultCollection The collection namespace to use for indexing requests
+	 * @param executor An @ExecutorService to submit indexing requests to
+	 */
+	public IndexingProxyFilter(Index index, String defaultCollection, ExecutorService executor) {
+		this.index = index;
+		this.defaultCollection = defaultCollection;
+		this.executor = executor;
+	}
+
 	@Override
 	public void processRequest(ProxyRequest request) {
 		this.url = request.getUri();
@@ -74,5 +86,20 @@ public class IndexingProxyFilter implements ProxyFilter {
 			});
 		}
 	}
+	
+	protected void processResponse(ProxyResponse response, boolean asynchronousFlag) {
+		if (new IndexingProxyResponseInfoSelector().test(new ProxyTransactionInfo(url, response.getStatus(), response.getHeaders()))) {
+			String content = response.getContentAsString(Charsets.UTF_8); //TODO: Need to use actual charset...
+			executor.submit(() -> {
+				try {
+					LOG.info("INDEXING {}", url);
+					index.indexPage(defaultCollection, url, Instant.now(), content);
+				} catch (IndexException e) {
+					LOG.error(e.getLocalizedMessage());
+				}
+			});
+		}
+	}
+	
 
 }

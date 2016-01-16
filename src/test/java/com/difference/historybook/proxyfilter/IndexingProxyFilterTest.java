@@ -30,6 +30,7 @@ import com.difference.historybook.proxy.ProxyRequest;
 import com.difference.historybook.proxy.ProxyResponse;
 import com.difference.historybook.proxyfilter.IndexingProxyFilter;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.MoreExecutors;
 
 public class IndexingProxyFilterTest {
 	private static final String DEFAULT_COLLECTION = "test";
@@ -92,7 +93,7 @@ public class IndexingProxyFilterTest {
 	private LuceneIndex processRequestResponse(RequestResponse reqRes, String defaultCollection) {
 		LuceneIndex index = mock(LuceneIndex.class);
 		
-		ProxyFilter filter = new IndexingProxyFilter(index, defaultCollection);
+		ProxyFilter filter = new IndexingProxyFilter(index, defaultCollection, MoreExecutors.newDirectExecutorService());
 		filter.processRequest(reqRes.getRequest());
 		filter.processResponse(reqRes.getResponse());
 		
