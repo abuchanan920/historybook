@@ -32,7 +32,10 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.10.19'
-    testCompile 'com.github.tomakehurst:wiremock:1.57'
+    testCompile ('com.github.tomakehurst:wiremock:1.57') {
+      exclude group: 'org.mortbay.jetty', module: 'servlet-api'
+    }
+
 }
 
 shadowJar {
