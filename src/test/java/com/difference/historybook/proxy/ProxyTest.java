@@ -24,10 +24,13 @@ import org.junit.Test;
 
 import com.difference.historybook.proxy.ProxyFilter;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.util.Random;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
@@ -73,15 +76,16 @@ public abstract class ProxyTest {
 	}
 
 	@Test
-	public void testLargeFetch() {
-		byte[] body = new byte[100 * 1024];
-		new Random().nextBytes(body);
+	public void testChunkedResponseHandling() throws IOException {
+		String fileName = "src/test/resources/__files/response.txt";
+		Path path = Paths.get(fileName).toAbsolutePath();
+		byte[] body = Files.readAllBytes(path);
 		
 		stubFor(get(urlEqualTo("/some/page"))
 	            .willReturn(aResponse()
 	                .withStatus(200)
 	                .withHeader("Content-Type", "text/html")
-	                .withBody(body)));
+	                .withBodyFile("response.txt")));
 		
 		Proxy proxy = getProxy().setPort(PROXY_PORT);
 		try {
@@ -89,6 +93,15 @@ public abstract class ProxyTest {
 			
 			java.net.Proxy proxyServer = new java.net.Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", PROXY_PORT));
 			HttpURLConnection connection = (HttpURLConnection)new URL("http://localhost:" + DUMMY_SERVER_PORT + "/some/page").openConnection(proxyServer);
+			
+			// The purpose of this test is to test chunked response handling, but there doesn't seem
+			// to be an easy way to force this in WireMock (or any of the other tools I looked at)
+			// Having it response with the content of a file seems to result in it switching to 
+			// chunked responses, but there isn't a reason this needs to be the case.
+			// The following test is really testing to make sure this test is still working
+			// and forcing chunked mode responses.
+			assertEquals("chunked", connection.getHeaderField("Transfer-Encoding"));
+			
 			byte[] fetchedContent = IOUtils.toByteArray(connection.getInputStream());
 			assertArrayEquals(body, fetchedContent);
 			
