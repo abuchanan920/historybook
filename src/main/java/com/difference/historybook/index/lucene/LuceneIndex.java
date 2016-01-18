@@ -57,6 +57,8 @@ import org.apache.lucene.search.highlight.SimpleSpanFragmenter;
 import org.apache.lucene.search.highlight.TokenSources;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,6 +188,7 @@ public class LuceneIndex implements Index {
 				
 	            String[] snippets = highlighter.getBestFragments(tokenStream, luceneDoc.get(IndexDocumentAdapter.FIELD_SEARCH), 3);
 	            String snippet = Arrays.asList(snippets).stream().collect(Collectors.joining("\n"));
+	            snippet = Jsoup.clean(snippet, Whitelist.simpleText());
 	            
 	            String debugInfo = null;
 	            if (includeDebug) {
