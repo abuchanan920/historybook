@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.stream.Collectors;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -31,6 +34,10 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.CustomScoreQuery;
+import org.apache.lucene.queries.function.FunctionQuery;
+import org.apache.lucene.queries.function.valuesource.LongFieldSource;
+import org.apache.lucene.queries.function.valuesource.ReciprocalFloatFunction;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
@@ -66,6 +73,9 @@ public class LuceneIndex implements Index {
 	private static final Logger LOG = LoggerFactory.getLogger(LuceneIndex.class);
 	
 	private static final String INDEXDIR = "index";
+	
+	// reciprical of number of seconds in year
+	private static final float RECIP = 1F / (60 * 60 * 24 * 365);
 		
 	private final Path path;
 	private final Directory dir;
@@ -82,6 +92,7 @@ public class LuceneIndex implements Index {
 	 * @throws IndexException
 	 */
 	public LuceneIndex(Path dataDirectory) throws IndexException {
+		
 		//TODO: Check to make sure directory is read/writable
 		path = dataDirectory.resolve(INDEXDIR);
 		
@@ -138,7 +149,16 @@ public class LuceneIndex implements Index {
 			BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
 			queryBuilder.add(parser.parse(query), Occur.MUST);
 			queryBuilder.add(new TermQuery(new Term(IndexDocumentAdapter.FIELD_COLLECTION, collection)), Occur.FILTER);
-			Query q = queryBuilder.build();
+			Query baseQuery = queryBuilder.build();
+
+			FunctionQuery boostQuery = new FunctionQuery(
+					new ReciprocalFloatFunction(
+							new DurationValueSource(
+									new Date().getTime()/1000, 
+									new LongFieldSource(IndexDocumentAdapter.FIELD_TIMESTAMP)), 
+							RECIP, 1F, 1F));
+			
+			Query q = new CustomScoreQuery(baseQuery, boostQuery);
 			
 			QueryScorer queryScorer = new QueryScorer(q, IndexDocumentAdapter.FIELD_SEARCH);
 			Fragmenter fragmenter = new SimpleSpanFragmenter(queryScorer);
@@ -163,7 +183,9 @@ public class LuceneIndex implements Index {
 						luceneDoc.get(IndexDocumentAdapter.FIELD_SEARCH), 
 						analyzer, 
 						highlighter.getMaxDocCharsToAnalyze() - 1);
-	            String snippet = highlighter.getBestFragment(tokenStream, luceneDoc.get(IndexDocumentAdapter.FIELD_SEARCH));
+				
+	            String[] snippets = highlighter.getBestFragments(tokenStream, luceneDoc.get(IndexDocumentAdapter.FIELD_SEARCH), 3);
+	            String snippet = Arrays.asList(snippets).stream().collect(Collectors.joining("\n"));
 	            
 	            String debugInfo = null;
 	            if (includeDebug) {

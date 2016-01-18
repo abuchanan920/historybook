@@ -20,7 +20,7 @@ import java.time.Instant;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
@@ -48,7 +48,7 @@ public class IndexDocumentAdapter {
 	public static final String FIELD_URL = "url";
 	public static final String FIELD_URL_GROUP = "url-group";
 	private static final String FIELD_DOMAIN = "domain";
-	private static final String FIELD_TIMESTAMP = "timestamp";
+	public static final String FIELD_TIMESTAMP = "timestamp";
 	private static final String FIELD_TIMESTAMP_TEXT = "timestampText";
 	private static final String FIELD_TITLE = "title";
 	private static final String FIELD_KEY = "key";
@@ -132,7 +132,7 @@ public class IndexDocumentAdapter {
 	 * @return this for method chaining
 	 */
 	public IndexDocumentAdapter setTimestamp(Instant timestamp) {
-		doc.add(new LongField(FIELD_TIMESTAMP, timestamp.getEpochSecond(), Field.Store.NO));		
+		doc.add(new NumericDocValuesField(FIELD_TIMESTAMP, timestamp.getEpochSecond()));	
 		doc.add(new StoredField(FIELD_TIMESTAMP_TEXT, timestamp.toString()));
 		return this;
 	}

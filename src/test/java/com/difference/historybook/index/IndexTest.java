@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import org.junit.Test;
 
@@ -159,6 +160,49 @@ public abstract class IndexTest {
 			SearchResult result = wrapper.getResults().get(0);
 			assertEquals(collection, result.getCollection());
 			assertEquals(url, result.getUrl());			
+		} catch (IndexException e) {
+			fail(e.getLocalizedMessage());
+		}
+	}
+	
+	@Test
+	public void testAgeBoosting() throws Exception {
+		try (Index index = getIndex()){
+			String collection = "collection";
+			String body = "Testing";
+
+			String url1 = "http://current.com";
+			Instant timestamp1 = Instant.now();
+			index.indexPage(collection, url1, timestamp1, body);
+			
+			String url2 = "http://yearold.com";
+			Instant timestamp2 = timestamp1.minus(365, ChronoUnit.DAYS);
+			index.indexPage(collection, url2, timestamp2, body);
+			
+			String url3 = "http://twoyearsold.com";
+			Instant timestamp3 = timestamp2.minus(365, ChronoUnit.DAYS);
+			index.indexPage(collection, url3, timestamp3, body);
+
+			SearchResultWrapper wrapper = index.search(collection, "testing", 0, 10);
+			assertEquals(3, wrapper.getResults().size());
+			
+			SearchResult result1 = wrapper.getResults().get(0);
+			SearchResult result2 = wrapper.getResults().get(1);
+			SearchResult result3 = wrapper.getResults().get(2);
+			
+			assertEquals(url1, result1.getUrl());	
+			assertEquals(url2, result2.getUrl());
+			assertEquals(url3, result3.getUrl());
+			
+			assertTrue(result2.getScore() < result1.getScore());
+			assertTrue(result3.getScore() < result2.getScore());
+			
+			float n2 = result2.getScore() * 1/(result1.getScore());
+			float n3 = result3.getScore() * 1/(result1.getScore());
+			
+			assertTrue(n2 > .49F && n2 < .51F);
+			assertTrue(n3 > .32F && n3 < .34F);
+			
 		} catch (IndexException e) {
 			fail(e.getLocalizedMessage());
 		}
