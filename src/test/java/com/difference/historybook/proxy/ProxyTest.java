@@ -19,7 +19,6 @@ package com.difference.historybook.proxy;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-
 import org.junit.Test;
 
 import com.difference.historybook.proxy.ProxyFilter;
