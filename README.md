@@ -8,7 +8,6 @@ Note that HistoryBook is in alpha state. There are numerous features that need t
 
 For example:
 
-* the proxy can't download large files in a memory efficient way yet
 * security/privacy concerns have not been addressed yet
 * App is a Minimum Viable Product (with an emphasis on *minimum*)
 
@@ -20,17 +19,24 @@ First, start the service:
 prompt> ./gradlew run
 ```
 
-Then set your browser proxy to point to ```localhost:8082```
+To set up your browser, you have two options:
+
+**Setup Option 1:** If you are using Chrome, you can use the extension at [historybook-chrome-extension](https://github.com/abuchanan920/historybook-chrome-extension). This has a number of other advantages (OmniBox integration and full page indexing).
+
+**Setup Option 2:** Use the proxy server by setting your proxy configuration to ```localhost:8082```
 On a Mac, you can do this at:
 System Preferences -> Network -> Advanced -> Proxies -> Web Proxy (HTTP)
 
+Note that Option 2 will only index the content of the initial page fetch, not any subsequent content loaded via JavaScript.
+
+**Use:**
 Start browsing. As you browse, the pages you visit will be added to the search index in real time.
 
 To perform a search, point your browser to [http://localhost:8080/search]()
 
 Note that you can get search engine debug information (useful for development) by appending "&debug=true" to the URL.
 
-If you are using Chrome and want to bulk load your browser history, take a look at the historybook-import project.
+If you are using Chrome and want to bulk load your browser history, take a look at the [historybook-import](https://github.com/abuchanan920/historybook-import) project.
 
 # Architecture
 
