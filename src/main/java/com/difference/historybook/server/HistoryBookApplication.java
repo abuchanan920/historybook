@@ -66,6 +66,14 @@ public class HistoryBookApplication extends Application<HistoryBookConfiguration
 		final CollectionResource collectionResource = new CollectionResource(index); 
 		environment.jersey().register(collectionResource);
 		
+		CertManager.initialize(
+				Paths.get(configuration.getKeyStorePath()),
+				configuration.getKeyStorePassword(),
+				configuration.getCertAlias(),
+				configuration.getHost(),
+				"HistoryBook",
+				configuration.getCertDuration());
+
 		environment.lifecycle().manage(new ManagedProxy(proxy));
 	}
 	

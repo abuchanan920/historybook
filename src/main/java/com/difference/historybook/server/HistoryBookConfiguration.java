@@ -30,14 +30,34 @@ public class HistoryBookConfiguration extends Configuration {
 	private String dataDirectory = System.getProperty("user.home") + "/Library/Application Support/HistoryBook";
 	private String defaultCollection = "default";
 	private int maxBufferSize = 1 * 1024 * 1024;
+	private int apiPort = 8443;
+	private int adminPort = 8444;
 	private int proxyPort = 8082;
+	private String host = "127.0.0.1";
+	private String keyStorePath = "historybook.jks";
+	private String keyStorePassword = ")A[Yb;:ci_p@f_r+$%{7`6XSWf^,V-";
+	private String certAlias = "historybook";
+	private long certDuration = 365*24*3600L;
 	
 	public HistoryBookConfiguration() {
 		super();
 		
 		//overrides
-		System.setProperty("dw.server.applicationConnectors[0].bindHost", "127.0.0.1");
-		System.setProperty("dw.server.adminConnectors[0].bindHost", "127.0.0.1");		
+		System.setProperty("dw.server.applicationConnectors[0].bindHost", host);
+		System.setProperty("dw.server.applicationConnectors[0].type", "https");		
+		System.setProperty("dw.server.applicationConnectors[0].port", new Integer(apiPort).toString());		
+		System.setProperty("dw.server.applicationConnectors[0].keyStorePath", keyStorePath);		
+		System.setProperty("dw.server.applicationConnectors[0].keyStorePassword", keyStorePassword);
+		System.setProperty("dw.server.applicationConnectors[0].certAlias", certAlias);
+		System.setProperty("dw.server.applicationConnectors[0].validateCerts", "false");		
+		
+		System.setProperty("dw.server.adminConnectors[0].bindHost", host);		
+		System.setProperty("dw.server.adminConnectors[0].type", "https");		
+		System.setProperty("dw.server.adminConnectors[0].port", new Integer(adminPort).toString());		
+		System.setProperty("dw.server.adminConnectors[0].keyStorePath", keyStorePath);		
+		System.setProperty("dw.server.adminConnectors[0].keyStorePassword", keyStorePassword);		
+		System.setProperty("dw.server.adminConnectors[0].certAlias", certAlias);		
+		System.setProperty("dw.server.adminConnectors[0].validateCerts", "false");		
 	}
 	
 	/**
@@ -89,6 +109,40 @@ public class HistoryBookConfiguration extends Configuration {
 	}
 
 	/**
+	 * @return port to run api service on
+	 */
+	@JsonProperty
+	public int getApiPort() {
+		return apiPort;
+	}
+
+	/**
+	 * @param apiPort port to run api service on
+	 */
+	@JsonProperty
+	public void setApiPort(int apiPort) {
+		this.apiPort = apiPort;
+		System.setProperty("dw.server.applicationConnectors[0].port", new Integer(apiPort).toString());		
+	}
+
+	/**
+	 * @return port to run admin service on
+	 */
+	@JsonProperty
+	public int getAdminPort() {
+		return adminPort;
+	}
+
+	/**
+	 * @param adminPort port to run admin service on
+	 */
+	@JsonProperty
+	public void setAdminPort(int adminPort) {
+		this.adminPort = adminPort;
+		System.setProperty("dw.server.adminConnectors[0].port", new Integer(adminPort).toString());		
+	}
+
+	/**
 	 * @return port to run proxy service on
 	 */
 	@JsonProperty
@@ -103,5 +157,91 @@ public class HistoryBookConfiguration extends Configuration {
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}
-		
+
+	/**
+	 * @return host to use for self-signed certificate
+	 */
+	@JsonProperty
+	public String getHost() {
+		return host;
+	}
+
+	/**
+	 * @param host host to use for self-signed certificate
+	 */
+	@JsonProperty
+	public void setHost(String host) {
+		this.host = host;
+		System.setProperty("dw.server.applicationConnectors[0].bindHost", host);
+		System.setProperty("dw.server.adminConnectors[0].bindHost", host);		
+	}
+
+	/**
+	 * @return path for self-signed certificate keystore
+	 */
+	@JsonProperty
+	public String getKeyStorePath() {
+		return keyStorePath;
+	}
+
+	/**
+	 * @param keyStorePath to use for self-signed certificate
+	 */
+	@JsonProperty
+	public void setKeyStorePath(String keyStorePath) {
+		this.keyStorePath = keyStorePath;
+		System.setProperty("dw.server.applicationConnectors[0].keyStorePath", keyStorePath);		
+		System.setProperty("dw.server.adminConnectors[0].keyStorePath", keyStorePath);		
+	}
+
+	/**
+	 * @return password to use for self-signed certificate keystore
+	 */
+	@JsonProperty
+	public String getKeyStorePassword() {
+		return keyStorePassword;
+	}
+
+	/**
+	 * @param keyStorePassword password to use for self-signed certificate keystore
+	 */
+	@JsonProperty
+	public void setKeyStorePassword(String keyStorePassword) {
+		this.keyStorePassword = keyStorePassword;
+		System.setProperty("dw.server.applicationConnectors[0].keyStorePassword", keyStorePassword);
+		System.setProperty("dw.server.adminConnectors[0].keyStorePassword", keyStorePassword);		
+	}
+
+	/**
+	 * @return name to use for self-signed certificate
+	 */
+	@JsonProperty
+	public String getCertAlias() {
+		return certAlias;
+	}
+
+	/**
+	 * @param certAlias name to use for self-signed certificate
+	 */
+	@JsonProperty
+	public void setCertAlias(String certAlias) {
+		this.certAlias = certAlias;
+		System.setProperty("dw.server.applicationConnectors[0].certAlias", certAlias);
+		System.setProperty("dw.server.adminConnectors[0].certAlias", certAlias);		
+	}
+
+	/**
+	 * @return valid duration to use for self-signed certificate
+	 */
+	public long getCertDuration() {
+		return certDuration;
+	}
+
+	/**
+	 * @param certDuration valid duration to use for self-signed certificate
+	 */
+	public void setCertDuration(long certDuration) {
+		this.certDuration = certDuration;
+	}
+
 }
