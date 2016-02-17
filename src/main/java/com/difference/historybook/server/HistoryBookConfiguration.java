@@ -30,14 +30,17 @@ public class HistoryBookConfiguration extends Configuration {
 	private String dataDirectory = System.getProperty("user.home") + "/Library/Application Support/HistoryBook";
 	private String defaultCollection = "default";
 	private int maxBufferSize = 1 * 1024 * 1024;
-	private int apiPort = 8443;
-	private int adminPort = 8444;
 	private int proxyPort = 8082;
-	private String host = "127.0.0.1";
-	private String keyStorePath = "historybook.jks";
-	private String keyStorePassword = ")A[Yb;:ci_p@f_r+$%{7`6XSWf^,V-";
-	private String certAlias = "historybook";
 	private long certDuration = 365*24*3600L;
+
+	// These seem to need to take effect in the constructor. 
+	// They are ignored if configured later.
+	private int apiPort = Integer.parseInt(System.getProperty("dw.apiPort", "8443"));
+	private int adminPort = Integer.parseInt(System.getProperty("dw.adminPort", "8444"));
+	private String host = System.getProperty("dw.host", "127.0.0.1");
+	private String keyStorePath = System.getProperty("dw.keyStorePath", "historybook.jks");
+	private String keyStorePassword = System.getProperty("dw.keyStorePassword", ")A[Yb;:ci_p@f_r+$%{7`6XSWf^,V-");
+	private String certAlias = System.getProperty("dw.certAlias", "historybook");
 	
 	public HistoryBookConfiguration() {
 		super();
@@ -45,9 +48,9 @@ public class HistoryBookConfiguration extends Configuration {
 		//overrides
 		System.setProperty("dw.server.applicationConnectors[0].bindHost", host);
 		System.setProperty("dw.server.applicationConnectors[0].type", "https");		
-		System.setProperty("dw.server.applicationConnectors[0].port", new Integer(apiPort).toString());		
+		System.setProperty("dw.server.applicationConnectors[0].port", new Integer(apiPort).toString());
 		System.setProperty("dw.server.applicationConnectors[0].keyStorePath", keyStorePath);		
-		System.setProperty("dw.server.applicationConnectors[0].keyStorePassword", keyStorePassword);
+		System.setProperty("dw.server.applicationConnectors[0].keyStorePassword", keyStorePassword);		
 		System.setProperty("dw.server.applicationConnectors[0].certAlias", certAlias);
 		System.setProperty("dw.server.applicationConnectors[0].validateCerts", "false");		
 		
@@ -117,12 +120,13 @@ public class HistoryBookConfiguration extends Configuration {
 	}
 
 	/**
+	 * NOTE: This setting only works as a system parameter, not in a config file.
+	 * 
 	 * @param apiPort port to run api service on
 	 */
 	@JsonProperty
 	public void setApiPort(int apiPort) {
 		this.apiPort = apiPort;
-		System.setProperty("dw.server.applicationConnectors[0].port", new Integer(apiPort).toString());		
 	}
 
 	/**
@@ -134,12 +138,13 @@ public class HistoryBookConfiguration extends Configuration {
 	}
 
 	/**
+	 * NOTE: This setting only works as a system parameter, not in a config file.
+	 * 
 	 * @param adminPort port to run admin service on
 	 */
 	@JsonProperty
 	public void setAdminPort(int adminPort) {
 		this.adminPort = adminPort;
-		System.setProperty("dw.server.adminConnectors[0].port", new Integer(adminPort).toString());		
 	}
 
 	/**
@@ -167,13 +172,13 @@ public class HistoryBookConfiguration extends Configuration {
 	}
 
 	/**
+	 * NOTE: This setting only works as a system parameter, not in a config file.
+	 * 
 	 * @param host host to use for self-signed certificate
 	 */
 	@JsonProperty
 	public void setHost(String host) {
 		this.host = host;
-		System.setProperty("dw.server.applicationConnectors[0].bindHost", host);
-		System.setProperty("dw.server.adminConnectors[0].bindHost", host);		
 	}
 
 	/**
@@ -185,13 +190,13 @@ public class HistoryBookConfiguration extends Configuration {
 	}
 
 	/**
+	 * NOTE: This setting only works as a system parameter, not in a config file.
+	 * 
 	 * @param keyStorePath to use for self-signed certificate
 	 */
 	@JsonProperty
 	public void setKeyStorePath(String keyStorePath) {
 		this.keyStorePath = keyStorePath;
-		System.setProperty("dw.server.applicationConnectors[0].keyStorePath", keyStorePath);		
-		System.setProperty("dw.server.adminConnectors[0].keyStorePath", keyStorePath);		
 	}
 
 	/**
@@ -203,13 +208,13 @@ public class HistoryBookConfiguration extends Configuration {
 	}
 
 	/**
+	 * NOTE: This setting only works as a system parameter, not in a config file.
+	 * 
 	 * @param keyStorePassword password to use for self-signed certificate keystore
 	 */
 	@JsonProperty
 	public void setKeyStorePassword(String keyStorePassword) {
 		this.keyStorePassword = keyStorePassword;
-		System.setProperty("dw.server.applicationConnectors[0].keyStorePassword", keyStorePassword);
-		System.setProperty("dw.server.adminConnectors[0].keyStorePassword", keyStorePassword);		
 	}
 
 	/**
@@ -221,13 +226,13 @@ public class HistoryBookConfiguration extends Configuration {
 	}
 
 	/**
+	 * NOTE: This setting only works as a system parameter, not in a config file.
+	 * 
 	 * @param certAlias name to use for self-signed certificate
 	 */
 	@JsonProperty
 	public void setCertAlias(String certAlias) {
 		this.certAlias = certAlias;
-		System.setProperty("dw.server.applicationConnectors[0].certAlias", certAlias);
-		System.setProperty("dw.server.adminConnectors[0].certAlias", certAlias);		
 	}
 
 	/**
